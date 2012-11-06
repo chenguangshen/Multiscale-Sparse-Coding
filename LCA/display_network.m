@@ -1,4 +1,4 @@
-function display_network(A,S_var)
+function display_network(A,S_var,display_v)
 %
 %  display_network -- displays the state of the network (weights and 
 %                     output variances)
@@ -40,14 +40,20 @@ for j=1:m
   end
 end
 
-subplot(212)
-imagesc(array,[-1 1]), axis image off
-title('basis functions')
 
-if exist('S_var','var')
+
+if exist('S_var','var') && exist('display_v','var')
   subplot(211)
   bar(S_var), axis([0 M+1 0 max(S_var)])
   title('coeff variance')
+
+  subplot(212)
+  imagesc(array,[-1 1]), axis image off
+  title('basis functions')
+
+else
+  imagesc(array,[-1 1]), axis image off
+  title('basis functions')
 end
 
 drawnow

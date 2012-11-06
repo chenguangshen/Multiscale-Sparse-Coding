@@ -21,7 +21,7 @@ Phi=randn(N,M);
 Phi=Phi*diag(1./sqrt(sum(Phi.*Phi)));
 
 % learning rate (start out large, then lower as solution converges)
-eta = 3.0;
+eta = 3.0*(1/batch_size);
 
 % lambda
 lambda = 0.1;
@@ -29,7 +29,8 @@ lambda = 0.1;
 a_var=ones(M,1);
 var_eta=.1;
 
-I=zeros(N,batch_size);
+% Increase size to have four times the non-padded basis function. TO DO: Generalize to full image size
+I=zeros(1*N,batch_size);
 
 display_every=100;
 display_network(Phi,a_var);
@@ -46,16 +47,16 @@ for t=1:num_trials
         % learns image patches that are twice the size
         r=BUFF+ceil((imsize-(2*sz)-2*BUFF)*rand);
         c=BUFF+ceil((imsize-(2*sz)-2*BUFF)*rand);
-        I(:,i)=reshape(IMAGES(r:r+(2*sz)-1,c:c+2*sz-1,imi),4*N,1);
+        I(:,i)=reshape(IMAGES(r:r+(1*sz)-1,c:c+(1*sz)-1,imi),4*N,1);
     end
 
     % calculate coefficients for these data via LCA
 
     % need to zero-pad Phi for the rest of the size
 
-    for i=1:N
-        Phi(:,i) = reshape(padarray(reshape(Phi,sz,sz),[sz/2, sz/2]), 4*N, 1);
-    end
+    %for i=1:N
+    %    Phi(:,i) = reshape(padarray(reshape(Phi(:,i),sz,sz),[sz/2, sz/2]), 4*N, 1);
+    %end
 
     ahat = sparsify(I,Phi,lambda);
 
@@ -70,7 +71,7 @@ for t=1:num_trials
         dPhi = dPhi + R(:,b) * ahat(:,b)'; %  learning rule here
     end
 
-    dPhi = dPhi/batch_size;
+    %dPhi = dPhi/batch_size;
 
     Phi = Phi + eta * dPhi;
 
@@ -86,6 +87,7 @@ for t=1:num_trials
         display_network(Phi,a_var);
     end
 
+    % To-Do: Use simulated annealing
     eta = .9999 * eta;
 
 end
