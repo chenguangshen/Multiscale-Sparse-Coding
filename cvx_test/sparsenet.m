@@ -15,7 +15,7 @@ L = 256;  % 16x16 Images
 szb = sqrt(L);
 
 % Pseudo-overcompleteness Level
-OC = 1;
+OC = 2;
 
 % M = Total number of Basis Functions
 M = OC*(sz-(szb-1))^2;
@@ -33,7 +33,7 @@ eta = 3.0/batch_size;
 % Lambda
 lambda = 0.1;
 
-display_every = 100;
+display_every = 10;
 display_network(Phi);
 
 for t=1:num_trials
@@ -63,8 +63,9 @@ for t=1:num_trials
 				k = sz-(szb-1);
 			end
 
+			% Each OC "set" is contiguous
 			for z=1:OC
-				ihat(j:j+szb-1,k:k+szb-1,b) = ihat(j:j+szb-1,k:k+szb-1,b) + ahat(i,b)*phihat(:,:,i);
+				ihat(j:j+szb-1,k:k+szb-1,b) = ihat(j:j+szb-1,k:k+szb-1,b) + ahat(i+(z-1)*M/OC,b)*phihat(:,:,i+(z-1)*M/OC);
 			end
 		end
 	end
@@ -90,31 +91,12 @@ for t=1:num_trials
 				k = sz-(szb-1);
 			end
 
-			dPhi(:,i) = dPhi(:,i) + reshape(R(j:j+szb-1,k:k+szb-1,b),szb*szb,1) * ahat(i,b)';
+			for z=1:OC
+				dPhi(:,i+(z-1)*M/OC) = dPhi(:,i+(z-1)*M/OC) + reshape(R(j:j+szb-1,k:k+szb-1,b),szb*szb,1) * ahat(i+(z-1)*M/OC,b)';
+			end
 		end
 	end
 
-	%{
-	for b=1:batch_size
-        dPhihat = dPhihat + R(:,b) * ahat(:,b)'; %  learning rule here
-    end
-    
-    dPhihat = dPhihat/batch_size;
-    dPhihat = reshape(dPhihat,16,16);
-
-   	for i=1:M
-   		%current row
-		j = ceil(i/(sz-(szb-1)));
-
-		%current column
-		k = mod(i,sz-(szb-1));
-		if k == 0
-			k = sz-(szb-1);
-		end
-    	
-    	dPhi(:,i) = reshape(dPhihat(j:j+szb-1,k:k+szb-1),szb*szb,1); 
-    end 
-	%}
     Phi = Phi + eta*dPhi;
     Phi=Phi*diag(1./sqrt(sum(Phi.*Phi))); % normalize bases
 
@@ -123,6 +105,9 @@ for t=1:num_trials
         display_network(Phi);
     end
 
+    % Expand basis if needed
+
+    % Check if basis needs expanding
 end
 
 

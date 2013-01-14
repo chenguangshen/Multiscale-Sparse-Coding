@@ -3,7 +3,8 @@ function a = sparsify(I,Phi,lambda,thresh_type,display_p)
 
 sz = 32;
 szb = 16;
-M = (sz-(szb-1))^2;
+OC = 2;
+M = OC*(sz-(szb-1))^2;
 
 if ~exist('display_p','var')
     display_p=0;
@@ -18,7 +19,7 @@ if size(Phi',1) ~= size(I,1)
 
     Phi = zeros(sz,sz,M);
 
-    for i=1:M
+    for i=1:M/OC
         %current row
         j = ceil(i/(sz-(szb-1)));
 
@@ -28,7 +29,9 @@ if size(Phi',1) ~= size(I,1)
             k = sz-(szb-1);
         end 
 
-        Phi(j:j+szb-1,k:k+szb-1,i) = Phihat(:,:,i);
+        for z=1:OC
+            Phi(j:j+szb-1,k:k+szb-1,i+(z-1)*M/OC) = Phihat(:,:,i+(z-1)*M/OC);
+        end
     end
 
     Phi = reshape(Phi,sz*sz,M);
