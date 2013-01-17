@@ -1,9 +1,10 @@
 % sparsify.m - sparsifies analog coefficients via LCA
-function a = sparsify(I,Phi,lambda,thresh_type,display_p)
+function a = sparsify(I,Phi,Phi2,level,lambda,thresh_type,display_p)
 
 sz = 32;
-szb = 16;
-OC = 2;
+szb = 8;
+szb2 = szb+2;
+OC = 1;
 M = OC*(sz-(szb-1))^2;
 
 if ~exist('display_p','var')
@@ -16,6 +17,7 @@ end
 
 if size(Phi',1) ~= size(I,1)
     Phihat = reshape(Phi,szb,szb,M);
+    Phihat2 = reshape(Phi2,szb2,szb2,M);
 
     Phi = zeros(sz,sz,M);
 
@@ -30,7 +32,13 @@ if size(Phi',1) ~= size(I,1)
         end 
 
         for z=1:OC
-            Phi(j:j+szb-1,k:k+szb-1,i+(z-1)*M/OC) = Phihat(:,:,i+(z-1)*M/OC);
+            if level(i+(z-1)*M/OC) == 1
+                Phi(j:j+szb-1,k:k+szb-1,i+(z-1)*M/OC) = Phihat(:,:,i+(z-1)*M/OC);
+            else
+                p = j - max(0,(j+szb2)-sz); 
+                q = k - max(0,(k+szb2)-sz);
+                Phi(p:p+szb2-1,q:q+szb2-1,i+(z-1)*M/OC) = Phihat2(:,:,i+(z-1)*M/OC);
+            end
         end
     end
 
