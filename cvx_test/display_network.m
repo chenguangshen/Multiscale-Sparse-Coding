@@ -62,12 +62,12 @@ if exist('S_var','var')
   subplot(212)
 end
 
-subplot(211)
+subplot(121)
 imagesc(array,[-1 1]), axis image off
 
 title('Basis Functions L1')
 
-subplot(212)
+subplot(122)
 imagesc(array2,[-1 1]), axis image off
 
 title('Basis Functions L2')

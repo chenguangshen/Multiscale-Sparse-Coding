@@ -16,6 +16,9 @@ szb = sqrt(L);
 szb2 = szb+2;
 L2 = szb2*szb2; 
 
+% Border from which around to expand
+B = 2;
+
 % Pseudo-overcompleteness Level
 OC = 1;
 
@@ -26,7 +29,7 @@ M = OC*(sz-(szb-1))^2;
 I = zeros(N,batch_size);
 
 % Random Initialization of Basis Functions
-Phi = randn(L,M);
+%Phi = randn(L,M);
 % Zero Initialization of L2 Basis Functions
 Phi2 = zeros(L2,M);
 Phi = Phi * diag(1./sqrt(sum(Phi.*Phi)));
@@ -43,8 +46,8 @@ lambda = 0.1;
 display_every = 100;
 display_network(Phi,Phi2);
 
-% allow basis functions to converge before expanding
-expand_every = 100;
+% allow basis functions to converge before expanding again
+expand_every = 400;
 
 for t=1:num_trials
 	imi=ceil(num_images*rand);
@@ -135,10 +138,6 @@ for t=1:num_trials
     Phi2 = Phi2 + eta*dPhi2;
     Phi2 = Phi2*diag(1./sqrt(s)); % normalize bases
 
-    if (mod(t,display_every)==0)
-    	fprintf('Trial %d \n', t);
-        display_network(Phi,Phi2);
-    end
 
     % Expand basis functions if needed
    	if(mod(t,expand_every)==0)
@@ -149,12 +148,17 @@ for t=1:num_trials
    			[hfmax, hfmaxi] = max(abs(hf(:)));
 			[yc, xc] = ind2sub(size(hf), hfmaxi);
    		
-			if xc == 1 || xc == szb || yc == 1 || yc == szb
+			if xc <= B || xc >= (szb - B) || yc <= B || yc >= (szb - B)
 				level(i) = 2; % move to level 2
 				Phi2(:,i) = reshape(padarray(phihat(:,:,i),[1 1]),szb2*szb2,1);
 			end
    		end
    	end 
+
+   	if (mod(t,display_every)==0)
+    	fprintf('Trial %d \n', t);
+        display_network(Phi,Phi2);
+    end
 
     % Check if basis needs expanding
 end
